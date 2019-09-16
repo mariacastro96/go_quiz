@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS locations(
+   id serial PRIMARY KEY,
+   lat VARCHAR (50) UNIQUE NOT NULL,
+   lon VARCHAR (50) NOT NULL,
+   created_at VARCHAR (300) UNIQUE NOT NULL
+);

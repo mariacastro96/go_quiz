@@ -7,28 +7,26 @@ import (
 	"log"
 	"net/http"
 
-	"./goquiz/locations"
-
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"github.com/mariacastro96/go_quiz/locations"
 )
 
 func homeLink(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
-	var data locations.location
+	var data locations.Location
 	err := decoder.Decode(&data)
 	if err != nil {
 		panic(err)
 	}
-	owner := data.lat
-	name := data.lon
-	log.Println(owner, name)
-	// fmt.Fprintf(w, "Welcome home!")
+
+	log.Printf("lat: %v, lon: %v, driver id: %v", data.Lat, data.Lon, data.DriverID)
+	fmt.Fprintf(w, "lat: %v, lon: %v, driver id: %v", data.Lat, data.Lon, data.DriverID)
 }
 
 func main() {
-	db, err := sql.Open("postgres", "postgres://postgres:password@localhost/quiz_locations?sslmode=disable")
+	db, err := sql.Open("postgres", "postgres://postgres:password@localhost/quizlocations?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}

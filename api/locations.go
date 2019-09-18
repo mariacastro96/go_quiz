@@ -11,13 +11,7 @@ import (
 	"github.com/mariacastro96/go_quiz/locations"
 )
 
-// AddLocationHandler adds location
-// type mc struct {
-// 	name string
-// 	age  int
-// }
-
-func AddLocationHandler(db *sql.DB) func(http.ResponseWriter, *http.Request) {
+func AddLocationHandler(db *sql.DB, loc []locations.Location) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 
@@ -27,34 +21,41 @@ func AddLocationHandler(db *sql.DB) func(http.ResponseWriter, *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-
-		locations := make(chan locations.Location, 1000)
-
-		log.Printf("locations %T", locations)
-		// go log.Println(maria)
+		log.Println("Before anything. locations array: ", loc)
 
 		err = db.Ping()
 		if err != nil {
 			fmt.Fprintf(w, "Having DB problems, will save your data as soon as possible")
-			select {
-			case locations <- data:
-				log.Println("received location", data)
-				log.Println("LOCATIONS", len(locations))
-			default:
-				log.Println("no location received")
+			loc = append(loc, data)
+			log.Println("This is not working. locations array: ", loc)
+		} else {
+			log.Println("locations before adding to db: ", loc)
+			for _, l := range loc {
+				lastInsertID := 0
+				log.Println("adding array locs to db: ", loc)
+				err = db.QueryRow("INSERT INTO locations (lat, lon, driver_id) VALUES ($1, $2, $3) RETURNING id", l.Lat, l.Lon, l.DriverID).Scan(&lastInsertID)
+				if err != nil {
+					log.Fatal("QUERY ERROR", err)
+
+				} else {
+					// log.Printf("lat: %v, lon: %v, driver id: %v, id: %v", l.Lat, l.Lon, l.DriverID, lastInsertID)
+					fmt.Fprintf(w, "OK! location id: %v", lastInsertID)
+				}
+			}
+			if len(loc) > 0 {
+				loc = nil
 			}
 
-		} else {
-			log.Println("LOCATIONS", len(locations))
-			lastInsertId := 0
-			err = db.QueryRow("INSERT INTO locations (lat, lon, driver_id) VALUES ($1, $2, $3) RETURNING id", data.Lat, data.Lon, data.DriverID).Scan(&lastInsertId)
+			lastInsertID := 0
+			err = db.QueryRow("INSERT INTO locations (lat, lon, driver_id) VALUES ($1, $2, $3) RETURNING id", data.Lat, data.Lon, data.DriverID).Scan(&lastInsertID)
 			if err != nil {
 				log.Fatal("QUERY ERROR", err)
 
 			} else {
-				log.Printf("lat: %v, lon: %v, driver id: %v, id: %v", data.Lat, data.Lon, data.DriverID, lastInsertId)
+				// log.Println("Locations: ", loc)
+				// log.Printf("lat: %v, lon: %v, driver id: %v, id: %v", data.Lat, data.Lon, data.DriverID, lastInsertID)
 
-				fmt.Fprintf(w, "OK! location id: %v", lastInsertId)
+				fmt.Fprintf(w, "OK! location id: %v", lastInsertID)
 			}
 		}
 	}

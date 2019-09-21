@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"github.com/mariacastro96/go_quiz/api"
+	"github.com/mariacastro96/go_quiz/locations"
 )
 
 func main() {
@@ -19,6 +20,6 @@ func main() {
 	defer db.Close()
 
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/locations", api.AddLocationHandler(db)).Methods("POST")
+	router.HandleFunc("/locations", api.AddLocationHandler(db, loc)).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

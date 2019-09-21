@@ -13,7 +13,9 @@ import (
 	"github.com/mariacastro96/go_quiz/postgres"
 )
 
+
 func AddLocationHandler(db *sql.DB) func(http.ResponseWriter, *http.Request) {
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 

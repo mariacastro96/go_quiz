@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -18,16 +17,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var loc []locations.Location
-	// err = db.Ping()
-	// if err != nil {
-	// 	log.Println("this is not ok with the DB")
-	// 	// log.Fatal("Error: Could not establish a connection with the database. err: %d", err.Error)
-	// }
 	defer db.Close()
-
-	log.Println("go")
-	fmt.Println("db ok")
 
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/locations", api.AddLocationHandler(db, loc)).Methods("POST")

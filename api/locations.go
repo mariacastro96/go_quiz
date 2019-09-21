@@ -7,15 +7,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"github.com/mariacastro96/go_quiz/locations"
-	"github.com/mariacastro96/go_quiz/postgres"
 )
 
-
-func AddLocationHandler(db *sql.DB) func(http.ResponseWriter, *http.Request) {
-
+func AddLocationHandler(db *sql.DB, loc []locations.Location) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 
@@ -25,14 +21,42 @@ func AddLocationHandler(db *sql.DB) func(http.ResponseWriter, *http.Request) {
 		if err != nil {
 			panic(err)
 		}
+		log.Println("Before anything. locations array: ", loc)
 
-		data.ID = uuid.New()
-
-		err = postgres.InsertLocations(data)
+		err = db.Ping()
 		if err != nil {
-			log.Println("QUERY ERROR", err)
+			fmt.Fprintf(w, "Having DB problems, will save your data as soon as possible")
+			loc = append(loc, data)
+			log.Println("This is not working. locations array: ", loc)
 		} else {
-			fmt.Fprintf(w, "location id: %v, \nlatitude: %v, \nlongitude: %v, \ndriver id: %v", data.ID, data.Lat, data.Lon, data.DriverID)
+			log.Println("locations before adding to db: ", loc)
+			for _, l := range loc {
+				lastInsertID := 0
+				log.Println("adding array locs to db: ", loc)
+				err = db.QueryRow("INSERT INTO locations (lat, lon, driver_id) VALUES ($1, $2, $3) RETURNING id", l.Lat, l.Lon, l.DriverID).Scan(&lastInsertID)
+				if err != nil {
+					log.Fatal("QUERY ERROR", err)
+
+				} else {
+					// log.Printf("lat: %v, lon: %v, driver id: %v, id: %v", l.Lat, l.Lon, l.DriverID, lastInsertID)
+					fmt.Fprintf(w, "OK! location id: %v", lastInsertID)
+				}
+			}
+			if len(loc) > 0 {
+				loc = nil
+			}
+
+			lastInsertID := 0
+			err = db.QueryRow("INSERT INTO locations (lat, lon, driver_id) VALUES ($1, $2, $3) RETURNING id", data.Lat, data.Lon, data.DriverID).Scan(&lastInsertID)
+			if err != nil {
+				log.Fatal("QUERY ERROR", err)
+
+			} else {
+				// log.Println("Locations: ", loc)
+				// log.Printf("lat: %v, lon: %v, driver id: %v, id: %v", data.Lat, data.Lon, data.DriverID, lastInsertID)
+
+				fmt.Fprintf(w, "OK! location id: %v", lastInsertID)
+			}
 		}
 	}
 }

@@ -8,6 +8,8 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"github.com/mariacastro96/go_quiz/api"
+	"github.com/mariacastro96/go_quiz/locations"
+	"github.com/mariacastro96/go_quiz/storage"
 )
 
 func main() {
@@ -16,9 +18,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	locs := storage.Postgres{db}
+
+	var storage []locations.Location
+
 	defer db.Close()
 
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/locations", api.AddLocationHandler(db)).Methods("POST")
+	router.HandleFunc("/locations", api.AddLocationHandler(locs, storage)).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

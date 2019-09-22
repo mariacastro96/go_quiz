@@ -1,19 +1,18 @@
 package api
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/google/uuid"
-	_ "github.com/lib/pq"
 	"github.com/mariacastro96/go_quiz/locations"
-	"github.com/mariacastro96/go_quiz/postgres"
+	"github.com/mariacastro96/go_quiz/storage"
 )
 
-func AddLocationHandler(db *sql.DB) func(http.ResponseWriter, *http.Request) {
+// AddLocationHandler decodes the json sent by client and answers to the client
+func AddLocationHandler(locs storage.Postgres, st []locations.Location) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 
@@ -26,9 +25,14 @@ func AddLocationHandler(db *sql.DB) func(http.ResponseWriter, *http.Request) {
 
 		data.ID = uuid.New()
 
-		err = postgres.InsertLocations(data)
+		data, err = locs.Insert(data)
 		if err != nil {
+			log.Println("Sending data into channel")
+			st = append(st, data)
 			log.Println("QUERY ERROR", err)
+			log.Println("letting the client know we good")
+
+			fmt.Fprintf(w, "location id: %v, \nlatitude: %v, \nlongitude: %v, \ndriver id: %v", data.ID, data.Lat, data.Lon, data.DriverID)
 		} else {
 			fmt.Fprintf(w, "location id: %v, \nlatitude: %v, \nlongitude: %v, \ndriver id: %v", data.ID, data.Lat, data.Lon, data.DriverID)
 		}

@@ -2,7 +2,6 @@ package storage
 
 import (
 	"database/sql"
-	"log"
 
 	"github.com/mariacastro96/go_quiz/locations"
 )
@@ -16,7 +15,6 @@ type Postgres struct {
 func (pg Postgres) Insert(data locations.Location) (locations.Location, error) {
 	err := pg.DB.QueryRow("INSERT INTO locations (id, lat, lon, driver_id) VALUES ($1, $2, $3, $4) RETURNING id", data.ID, data.Lat, data.Lon, data.DriverID).Scan(&data.ID)
 	if err != nil {
-		log.Println(data)
 		return data, err
 	}
 	return data, nil

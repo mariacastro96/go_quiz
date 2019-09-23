@@ -20,11 +20,11 @@ func main() {
 
 	locs := storage.Postgres{db}
 
-	var storage []locations.Location
+	var storedLocations []locations.Location
 
 	defer db.Close()
 
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/locations", api.AddLocationHandler(locs, storage)).Methods("POST")
+	router.HandleFunc("/locations", api.AddLocationHandler(locs, storedLocations)).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

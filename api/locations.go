@@ -12,7 +12,7 @@ import (
 )
 
 // AddLocationHandler decodes the json sent by client and answers to the client
-func AddLocationHandler(locs storage.Postgres, st []locations.Location) func(http.ResponseWriter, *http.Request) {
+func AddLocationHandler(locs storage.Postgres, storedLocs []locations.Location) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 
@@ -25,16 +25,20 @@ func AddLocationHandler(locs storage.Postgres, st []locations.Location) func(htt
 
 		data.ID = uuid.New()
 
-		data, err = locs.Insert(data)
-		if err != nil {
-			log.Println("Sending data into channel")
-			st = append(st, data)
-			log.Println("QUERY ERROR", err)
-			log.Println("letting the client know we good")
+		storedLocs = append(storedLocs, data)
+		log.Println("Locs before", storedLocs)
 
-			fmt.Fprintf(w, "location id: %v, \nlatitude: %v, \nlongitude: %v, \ndriver id: %v", data.ID, data.Lat, data.Lon, data.DriverID)
-		} else {
-			fmt.Fprintf(w, "location id: %v, \nlatitude: %v, \nlongitude: %v, \ndriver id: %v", data.ID, data.Lat, data.Lon, data.DriverID)
+		for _, v := range storedLocs {
+			data, err = locs.Insert(v)
+			if err != nil {
+				log.Println("QUERY ERROR", err)
+
+				fmt.Fprintf(w, "location id: %v, \nlatitude: %v, \nlongitude: %v, \ndriver id: %v", data.ID, data.Lat, data.Lon, data.DriverID)
+			} else {
+				storedLocs = storedLocs[1:]
+				log.Println("Locs after", storedLocs)
+				fmt.Fprintf(w, "location id: %v, \nlatitude: %v, \nlongitude: %v, \ndriver id: %v", data.ID, data.Lat, data.Lon, data.DriverID)
+			}
 		}
 	}
 }

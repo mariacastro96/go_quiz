@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -25,6 +26,9 @@ func main() {
 	var storedLocations []locations.Location
 
 	defer db.Close()
+
+	log.Println("go")
+	fmt.Println("db ok")
 
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/locations", api.AddLocationHandler(locs, storedLocations)).Methods("POST")

@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS locations(
-   id UUID NOT NULL,
+   id SERIAL PRIMARY KEY,
    lat FLOAT NOT NULL,
    lon FLOAT NOT NULL,
    driver_id INT NOT NULL,

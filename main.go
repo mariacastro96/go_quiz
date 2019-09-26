@@ -18,7 +18,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	locs := storage.Postgres{db}
+	locs := storage.Postgres{
+		DB: db,
+	}
 
 	var storedLocations []locations.Location
 

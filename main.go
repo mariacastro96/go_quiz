@@ -10,6 +10,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/mariacastro96/go_quiz/api"
 	"github.com/mariacastro96/go_quiz/locations"
+	"github.com/mariacastro96/go_quiz/storage"
 )
 
 func main() {
@@ -18,18 +19,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var loc []locations.Location
-	// err = db.Ping()
-	// if err != nil {
-	// 	log.Println("this is not ok with the DB")
-	// 	// log.Fatal("Error: Could not establish a connection with the database. err: %d", err.Error)
-	// }
+	locs := storage.Postgres{
+		DB: db,
+	}
+
+	var storedLocations []locations.Location
+
 	defer db.Close()
 
 	log.Println("go")
 	fmt.Println("db ok")
 
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/locations", api.AddLocationHandler(db, loc)).Methods("POST")
+	router.HandleFunc("/locations", api.AddLocationHandler(locs, storedLocations)).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

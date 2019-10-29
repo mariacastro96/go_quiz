@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -27,12 +26,21 @@ func AddLocationHandler(store storage.Postgres) func(http.ResponseWriter, *http.
 
 		data, err = store.Insert(data)
 		if err != nil {
+			jsonError, err := json.Marshal("There was an connection error")
+			if err != nil {
+				log.Println("ERROR WITH JSON MARSHAL", err)
+			}
+			w.WriteHeader(http.StatusServiceUnavailable)
+			w.Write(jsonError)
+
 			log.Println("QUERY ERROR", err)
-
-			fmt.Fprintf(w, "location id: %v, \nlatitude: %v, \nlongitude: %v, \ndriver id: %v", data.ID, data.Lat, data.Lon, data.DriverID)
 		} else {
-
-			fmt.Fprintf(w, "location id: %v, \nlatitude: %v, \nlongitude: %v, \ndriver id: %v", data.ID, data.Lat, data.Lon, data.DriverID)
+			jsonValidData, err := json.Marshal(data)
+			if err != nil {
+				log.Println("ERROR WITH JSON MARSHAL", err)
+			}
+			w.WriteHeader(http.StatusCreated)
+			w.Write(jsonValidData)
 		}
 
 	}

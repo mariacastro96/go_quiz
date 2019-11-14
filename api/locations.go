@@ -2,9 +2,11 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"github.com/mariacastro96/go_quiz/locations"
 	"github.com/mariacastro96/go_quiz/postgres"
 )
@@ -39,5 +41,14 @@ func AddLocationHandler(locationsRepo postgres.LocationsRepo) func(http.Response
 		header.Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		w.Write(jsonValidData)
+	}
+}
+
+// GetLocationByIdHandler decodes the json sent by client and answers to the client
+func GetLocationByIDHandler(locationsRepo postgres.LocationsRepo) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		params := mux.Vars(r)
+		log.Println(params["id"])
+		return
 	}
 }

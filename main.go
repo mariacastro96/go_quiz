@@ -25,5 +25,6 @@ func main() {
 
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/locations", api.AddLocationHandler(locationsStore)).Methods("POST")
+	router.HandleFunc("/locations/{id}", api.GetLocationByIDHandler(locationsStore)).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

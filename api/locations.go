@@ -1,8 +1,8 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -25,7 +25,7 @@ func AddLocationHandler(locationsRepo postgres.LocationsRepo) func(http.Response
 
 		data.ID = uuid.New()
 		if err := locationsRepo.Insert(data); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(err.Error()))
 			return
 		}
@@ -41,14 +41,37 @@ func AddLocationHandler(locationsRepo postgres.LocationsRepo) func(http.Response
 		header.Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		w.Write(jsonValidData)
+		return
 	}
 }
 
-// GetLocationByIdHandler decodes the json sent by client and answers to the client
+// GetLocationByIDHandler decodes the json sent by client and answers to the client
 func GetLocationByIDHandler(locationsRepo postgres.LocationsRepo) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		params := mux.Vars(r)
-		log.Println(params["id"])
+		id := mux.Vars(r)["id"]
+		data, err := locationsRepo.GetByID(id)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				w.WriteHeader(http.StatusNotFound)
+				w.Write([]byte(err.Error()))
+				return
+			}
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+			return
+		}
+
+		jsonValidData, err := json.Marshal(data)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(err.Error()))
+			return
+		}
+
+		header := w.Header()
+		header.Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		w.Write(jsonValidData)
 		return
 	}
 }

@@ -53,24 +53,23 @@ func GetLocationByIDHandler(locationsRepo postgres.LocationsRepo) func(http.Resp
 		if err != nil {
 			if err == sql.ErrNoRows {
 				w.WriteHeader(http.StatusNotFound)
-				w.Write([]byte(err.Error()))
-				return
+			} else {
+				w.WriteHeader(http.StatusInternalServerError)
 			}
-			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(err.Error()))
 			return
 		}
 
 		jsonValidData, err := json.Marshal(data)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(err.Error()))
 			return
 		}
 
 		header := w.Header()
 		header.Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
+		w.WriteHeader(http.StatusOK)
 		w.Write(jsonValidData)
 		return
 	}

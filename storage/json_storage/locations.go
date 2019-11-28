@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	"log"
 	"os"
 
 	"github.com/google/uuid"
@@ -46,17 +45,20 @@ func (file LocationsRepo) Insert(data locations.Location) error {
 func (file LocationsRepo) GetByID(id string) (locations.Location, error) {
 	var data locations.Location
 	var ls []locations.Location
-	fileInfo, _ := file.File.Stat()
+	fileInfo, err := file.File.Stat()
+	if err != nil {
+		return data, err
+	}
 	byteValue, err := ioutil.ReadFile(fileInfo.Name())
 	if err != nil {
-		log.Print("ON HELL")
+		return data, err
 	}
 	locs := `[` + string(byteValue) + `]`
 	json.Unmarshal([]byte(locs), &ls)
 	for _, v := range ls {
 		id, err := uuid.Parse(id)
 		if err != nil {
-			log.Println(err)
+			return data, err
 		}
 		if id == v.ID {
 			return locations.Location{ID: v.ID, Lat: v.Lat, Lon: v.Lon, DriverID: v.DriverID}, nil

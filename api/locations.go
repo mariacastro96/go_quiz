@@ -32,7 +32,7 @@ func AddLocationHandler(locationsRepoManager storage.LocationsManager) func(http
 
 		jsonValidData, err := json.Marshal(data)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(err.Error()))
 			return
 		}

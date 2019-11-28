@@ -28,7 +28,7 @@ func (m LocationsManager) Save(location locations.Location) error {
 func (m LocationsManager) Find(id string) (locations.Location, error) {
 	loc, postgresErr := m.PostgresRepo.GetByID(id)
 	if postgresErr != nil {
-		loc, fileErr := m.PostgresRepo.GetByID(id)
+		loc, fileErr := m.FileRepo.GetByID(id)
 		if fileErr != nil {
 			return locations.Location{}, fmt.Errorf("postgres error: %s. file error: %s", postgresErr.Error(), fileErr.Error())
 		}

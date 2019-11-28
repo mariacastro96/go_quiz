@@ -22,16 +22,12 @@ func main() {
 	}
 	defer db.Close()
 
-	const path = "locations.json"
-	// file, err = os.OpenFile(path, os.O_RDWR, 0644)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// 	return
-	// }
-	// defer file.Close()
-	_, err = os.Stat(path)
+	const Path = "locations.json"
+	const pathTwo = "locations.csv"
+
+	_, err = os.Stat(Path)
 	if os.IsNotExist(err) {
-		var file, err = os.Create(path)
+		var file, err = os.Create(Path)
 		if err != nil {
 			log.Println("lol")
 			log.Fatal(err)
@@ -40,7 +36,7 @@ func main() {
 		defer file.Close()
 	}
 
-	file, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(Path, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println("lolol")
 		log.Fatal(err)

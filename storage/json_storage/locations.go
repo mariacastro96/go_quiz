@@ -2,8 +2,12 @@ package jsonStorage
 
 import (
 	"encoding/json"
+	"errors"
+	"io/ioutil"
+	"log"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/mariacastro96/go_quiz/locations"
 )
 
@@ -14,34 +18,49 @@ type LocationsRepo struct {
 
 // Insert locations into file
 func (file LocationsRepo) Insert(data locations.Location) error {
-	jsonData, err := json.Marshal(data)
+	fileInfo, err := file.File.Stat()
 	if err != nil {
 		return err
 	}
+	if size := fileInfo.Size(); size > 0 {
+		_, writeErr := file.File.WriteString(",")
+		if writeErr != nil {
+			return writeErr
+		}
+	}
+	jsonData, err := json.Marshal(data)
+
+	if err != nil {
+		return err
+	}
+
 	_, writeErr := file.File.Write(jsonData)
 	if writeErr != nil {
 		return writeErr
 	}
+
 	return nil
 }
 
 // GetByID locations from file with the id
 func (file LocationsRepo) GetByID(id string) (locations.Location, error) {
 	var data locations.Location
-	// var text = make([]byte, 1024)
-	// for {
-	// 	_, err = file.File.Read(text)
-
-	// 	// break if finally arrived at end of file
-	// 	if err == io.EOF {
-	// 		break
-	// 	}
-
-	// 	// break if error occured
-	// 	if err != nil && err != io.EOF {
-	// 		isError(err)
-	// 		break
-	// 	}
-	// }
-	return data, nil
+	var ls []locations.Location
+	fileInfo, _ := file.File.Stat()
+	byteValue, err := ioutil.ReadFile(fileInfo.Name())
+	if err != nil {
+		log.Print("ON HELL")
+	}
+	locs := `[` + string(byteValue) + `]`
+	json.Unmarshal([]byte(locs), &ls)
+	for _, v := range ls {
+		id, err := uuid.Parse(id)
+		if err != nil {
+			log.Println(err)
+		}
+		if id == v.ID {
+			return locations.Location{ID: v.ID, Lat: v.Lat, Lon: v.Lon, DriverID: v.DriverID}, nil
+		}
+	}
+	return data, errors.New("No Rows")
 }

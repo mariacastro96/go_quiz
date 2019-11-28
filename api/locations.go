@@ -51,7 +51,7 @@ func GetLocationByIDHandler(locationsRepoManager storage.LocationsManager) func(
 		id := mux.Vars(r)["id"]
 		data, err := locationsRepoManager.Find(id)
 		if err != nil {
-			if err == sql.ErrNoRows {
+			if err == sql.ErrNoRows || err.Error() == "No Rows" {
 				w.WriteHeader(http.StatusNotFound)
 			} else {
 				w.WriteHeader(http.StatusInternalServerError)

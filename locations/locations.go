@@ -1,9 +1,11 @@
 package locations
 
+import "github.com/google/uuid"
+
 // Location bla bla bla
 type Location struct {
-	ID       int     `json:"ID"`
-	Lat      float64 `json:"latitude"`
-	Lon      float64 `json:"longitude"`
-	DriverID float64 `json:"driver_id"`
+	ID       uuid.UUID `json:"id"`
+	Lat      float64   `json:"latitude"`
+	Lon      float64   `json:"longitude"`
+	DriverID int       `json:"driver_id"`
 }

@@ -1,4 +1,4 @@
-package jsonStorage
+package jsonstorage
 
 import (
 	"encoding/json"

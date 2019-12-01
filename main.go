@@ -4,13 +4,14 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
-	"os"
 
+	filestorage "github.com/mariacastro96/go_quiz/storage/file_storage"
+
+	badger "github.com/dgraph-io/badger"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"github.com/mariacastro96/go_quiz/api"
 	"github.com/mariacastro96/go_quiz/storage"
-	jsonStorage "github.com/mariacastro96/go_quiz/storage/json_storage"
 	"github.com/mariacastro96/go_quiz/storage/postgres"
 )
 
@@ -22,33 +23,22 @@ func main() {
 	}
 	defer db.Close()
 
-	const Path = "locations.json"
-	const pathTwo = "locations.csv"
-
-	_, err = os.Stat(Path)
-	if os.IsNotExist(err) {
-		var file, err = os.Create(Path)
-		if err != nil {
-			log.Println("lol")
-			log.Fatal(err)
-			return
-		}
-		defer file.Close()
-	}
-
-	file, err := os.OpenFile(Path, os.O_APPEND|os.O_WRONLY, 0644)
+	fileDB, err := badger.Open(badger.DefaultOptions("file_locations"))
 	if err != nil {
-		log.Println("lolol")
+		log.Println("IT WAS HERE actually")
 		log.Fatal(err)
 		return
 	}
+	defer db.Close()
+
+	const Path = "locations.json"
 
 	pgLocationsStore := postgres.LocationsRepo{
 		DB: db,
 	}
 
-	fileLocationsStore := jsonStorage.LocationsRepo{
-		File: file,
+	fileLocationsStore := filestorage.LocationsRepo{
+		DB: fileDB,
 	}
 
 	locationsStoreManager := storage.LocationsManager{

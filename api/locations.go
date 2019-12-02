@@ -8,11 +8,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/mariacastro96/go_quiz/locations"
-	"github.com/mariacastro96/go_quiz/postgres"
+	"github.com/mariacastro96/go_quiz/storage"
 )
 
 // AddLocationHandler decodes the json sent by client and answers to the client
-func AddLocationHandler(locationsRepo postgres.LocationsRepo) func(http.ResponseWriter, *http.Request) {
+func AddLocationHandler(locationsRepoManager storage.LocationsManager) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 
@@ -24,7 +24,7 @@ func AddLocationHandler(locationsRepo postgres.LocationsRepo) func(http.Response
 		}
 
 		data.ID = uuid.New()
-		if err := locationsRepo.Insert(data); err != nil {
+		if err := locationsRepoManager.Save(data); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(err.Error()))
 			return
@@ -32,7 +32,7 @@ func AddLocationHandler(locationsRepo postgres.LocationsRepo) func(http.Response
 
 		jsonValidData, err := json.Marshal(data)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(err.Error()))
 			return
 		}
@@ -46,12 +46,12 @@ func AddLocationHandler(locationsRepo postgres.LocationsRepo) func(http.Response
 }
 
 // GetLocationByIDHandler decodes the json sent by client and answers to the client
-func GetLocationByIDHandler(locationsRepo postgres.LocationsRepo) func(http.ResponseWriter, *http.Request) {
+func GetLocationByIDHandler(locationsRepoManager storage.LocationsManager) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := mux.Vars(r)["id"]
-		data, err := locationsRepo.GetByID(id)
+		data, err := locationsRepoManager.Find(id)
 		if err != nil {
-			if err == sql.ErrNoRows {
+			if err == sql.ErrNoRows || err.Error() == "No Rows" {
 				w.WriteHeader(http.StatusNotFound)
 			} else {
 				w.WriteHeader(http.StatusInternalServerError)
